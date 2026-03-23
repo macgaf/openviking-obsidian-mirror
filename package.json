@@ -1,0 +1,21 @@
+{
+  "name": "obsidian-openviking-sync",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Obsidian plugin for observing and correcting OpenViking memories",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs development",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.1",
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.25.9",
+    "obsidian": "^1.8.10",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "yaml": "^2.8.1"
+  }
+}

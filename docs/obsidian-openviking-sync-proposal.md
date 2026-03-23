@@ -49,25 +49,28 @@
 
 ### 4.2 展示范围
 
-v1 主要投影长期记忆叶子节点，默认关注：
+v1 主要投影 OV 当前 user space 和 agent space 下的 memory 根目录。真实根路径应在启动时发现，不应硬编码为裸 `viking://user/memories` 或 `viking://agent/memories`。
 
-- `viking://user/memories`
-- `viking://agent/memories`
+以当前本机实例为例，真实根路径为：
 
-同时允许通过插件配置扩展更多 memory 根目录。
+- `viking://user/default/memories`
+- `viking://agent/ffb1327b18bf/memories`
+
+同时允许通过插件配置扩展更多 memory 根目录，但自定义根目录默认只读。
 
 ### 4.3 分层呈现
 
-OpenViking 的三层内容在 Obsidian 中分别呈现为独立文档：
+结合真实 OV 实例，三层内容并不是“每条 memory 都有三份文件”，而是：
 
-- `L0.abstract.md`：摘要
-- `L1.overview.md`：概览
-- `L2.current.md`：原始正文
+- 目录级 `L0`：`{dir}/.abstract.md`
+- 目录级 `L1`：`{dir}/.overview.md`
+- 文件级 `L2`：叶子 memory 文件本身，例如 `mem_xxx.md`、`profile.md`
 
-其中：
+因此 Obsidian 插件应镜像 OV 的真实语义：
 
-- `L0` 和 `L1` 只读展示
-- `L2` 允许编辑，但编辑结果不会自动直接覆盖远端
+- 目录摘要与概览作为只读投影展示
+- 叶子 memory 文件作为正文投影展示
+- 仅叶子 memory 文件允许编辑
 
 ## 5. 同步机制
 
@@ -75,12 +78,10 @@ OpenViking 的三层内容在 Obsidian 中分别呈现为独立文档：
 
 插件启动后和定时轮询时，对每个配置根目录执行：
 
-- `fs/ls?recursive=true` 获取条目列表
-- 以 `uri + modTime` 作为远端版本标识
-- 对新增或更新条目拉取：
-  - `content/abstract`
-  - `content/overview`
-  - `content/read`
+- `fs/ls?recursive=true` 获取目录和文件列表，仅用于发现条目
+- 对目录使用 `content/abstract` / `content/overview` 获取目录级摘要
+- 对文件使用 `content/read` 获取正文
+- 使用 `fs/stat` 的结果作为远端版本真相，而不是直接依赖 `fs/ls` 返回的展示型 `modTime`
 
 默认触发方式：
 
@@ -104,17 +105,18 @@ OpenViking 的三层内容在 Obsidian 中分别呈现为独立文档：
 
 ### 6.1 提交流程
 
-当用户在 `L2.current.md` 中完成人工修正后，通过插件命令提交：
+当用户在可编辑的叶子 memory 文件中完成人工修正后，通过插件命令提交：
 
 1. 创建临时 session
 2. 写入包含“原记忆 URI + 原始摘要 + 修正文案”的结构化消息
 3. 调用 session extract 流程生成新的 memory
-4. 若成功提取到单条纠正记忆，则建立原记忆与纠正记忆之间的 relation link
-5. 刷新 Obsidian 投影视图
+4. 仅当返回结果中存在一条新的、可识别的 correction memory URI 时，才视为成功
+5. 成功后建立原记忆与纠正记忆之间的 relation link
+6. 刷新 Obsidian 投影视图
 
 ### 6.2 失败策略
 
-若提取结果为 0 条或多条：
+若提取结果为 0 条、返回原 URI、或无法确认产生新的 correction URI：
 
 - 不覆盖当前投影
 - 保留本地草稿
@@ -126,16 +128,27 @@ OpenViking 的三层内容在 Obsidian 中分别呈现为独立文档：
 
 ```text
 OpenViking/
-  user-memories/
-  agent-memories/
+  user/
+    default/
+      memories/
+        _dir.abstract.md
+        _dir.overview.md
+        profile.md
+        preferences/
+          _dir.abstract.md
+          _dir.overview.md
+          mem_xxx.md
+  agent/
+    ffb1327b18bf/
+      memories/
   _deleted/
 ```
 
 每个投影文档包含 frontmatter，例如：
 
 ```yaml
-ov_uri: viking://user/memories/...
-ov_layer: l2
+ov_uri: viking://user/default/memories/preferences/mem_xxx.md
+ov_entry_type: memory_file
 ov_mod_time: 2026-03-20T10:00:00Z
 ov_synced_at: 2026-03-20T10:01:00Z
 ov_editable: true
@@ -145,6 +158,8 @@ ov_deleted: false
 ## 8. 历史与可观察性
 
 用户希望在 Obsidian 中看到 OpenViking 的变更历史，因此插件需要维护一条“修订时间线”。
+
+v1 中修订时间线以可编辑的 leaf memory 文件为主。目录级摘要与概览会被同步刷新，但不作为 correction 提交目标。
 
 时间线至少记录：
 
@@ -164,7 +179,8 @@ ov_deleted: false
 - 桌面端 Obsidian 插件
 - memory 根目录投影
 - 启动、手动、定时同步
-- L0/L1/L2 文档生成
+- 目录级摘要/概览投影
+- 叶子 memory 文件投影
 - 修订时间线
 - 纠正记忆提交
 - 删除确认流程
