@@ -1,5 +1,5 @@
 import { requestUrl } from "obsidian";
-import { DiscoveredRoot, RemoteEntry } from "./types";
+import { DiscoveredRoot, FindResult, RemoteEntry } from "./types";
 
 type ApiEnvelope<T> = {
   status: "ok" | "error";
@@ -51,7 +51,7 @@ export class OpenVikingClient {
     });
     const payload = (response.json ?? {}) as ApiEnvelope<T>;
     if (response.status >= 400 || payload.status === "error") {
-      throw new Error(payload.error?.message ?? `OV request failed with HTTP ${response.status}`);
+      throw new Error(payload.error?.message ?? `OpenViking request failed with HTTP ${response.status}`);
     }
     return payload.result as T;
   }
@@ -144,6 +144,18 @@ export class OpenVikingClient {
   async deleteUri(uri: string): Promise<void> {
     await this.request(`/api/v1/fs?${new URLSearchParams({ uri, recursive: "false" }).toString()}`, {
       method: "DELETE",
+    });
+  }
+
+  async find(query: string, targetUri: string, limit = 10): Promise<FindResult> {
+    return this.request<FindResult>("/api/v1/search/find", {
+      method: "POST",
+      body: JSON.stringify({
+        query,
+        target_uri: targetUri,
+        limit,
+        score_threshold: 0,
+      }),
     });
   }
 

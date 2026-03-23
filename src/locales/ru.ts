@@ -1,0 +1,55 @@
+import type { TranslationMessages } from "./schema";
+
+export const ru: TranslationMessages = {
+  "settings.uiLanguage.name": "Язык интерфейса",
+  "settings.uiLanguage.desc":
+    "Язык страницы настроек, уведомлений и названий команд. После изменения перезагрузите Obsidian.",
+  "settings.baseUrl.name": "OpenViking base URL",
+  "settings.baseUrl.desc": "Базовый URL HTTP-сервиса OpenViking.",
+  "settings.apiKey.name": "API-ключ",
+  "settings.apiKey.desc": "API-ключ OpenViking. Оставляйте пустым только если сервис разрешает анонимное чтение.",
+  "settings.autoDiscover.name": "Автообнаружение корней памяти",
+  "settings.autoDiscover.desc":
+    "При запуске автоматически определяет текущие корни памяти пользователя и агента в экземпляре OpenViking.",
+  "settings.projectionRoots.name": "Корни проекции",
+  "settings.projectionRoots.desc":
+    "Один корень памяти OpenViking на строку. Используется, когда автообнаружение отключено.",
+  "settings.vaultFolder.name": "Папка vault",
+  "settings.vaultFolder.desc": "Корневая папка внутри vault Obsidian для хранения проекций OpenViking.",
+  "settings.pollInterval.name": "Интервал опроса (сек)",
+  "settings.pollInterval.desc": "Как часто плагин проверяет изменения в OpenViking.",
+  "settings.syncNow.name": "Синхронизировать сейчас",
+  "settings.syncNow.desc":
+    "Немедленно синхронизирует корни OpenViking и показывает подробные ошибки, если какой-либо корень не удалось обработать.",
+  "settings.syncNow.running": "Синхронизация с OpenViking...",
+  "settings.reloadNotice": "Перезагрузите Obsidian, чтобы обновить названия команд и язык уведомлений.",
+  "notice.initialSyncFailed": "Начальная синхронизация OpenViking не удалась: {error}",
+  "notice.directoryRefreshed": "Сводки каталогов управляются OpenViking и были обновлены.",
+  "notice.directoryRestoreFailed": "Не удалось восстановить файл под управлением OpenViking: {error}",
+  "notice.abstractRestored": "Раздел OpenViking abstract доступен только для чтения и был восстановлен из OpenViking.",
+  "notice.correctionSubmitted": "Исправление отправлено в OpenViking.",
+  "notice.draftReset": "Локальный черновик восстановлен до содержимого OpenViking.",
+  "notice.markDelete": "Память помечена на удаление. Выполните confirm delete, чтобы удалить её из OpenViking.",
+  "notice.confirmDelete": "Память удалена из OpenViking.",
+  "notice.correctionCopied": "URI исправления скопирован: {uri}",
+  "notice.ovUriCopied": "URI OpenViking скопирован: {uri}",
+  "command.syncNow": "OpenViking: Синхронизировать сейчас",
+  "command.submitCorrection": "OpenViking: Отправить исправление",
+  "command.resetLocalDraft": "OpenViking: Сбросить локальный черновик",
+  "command.markDelete": "OpenViking: Пометить на удаление",
+  "command.confirmDelete": "OpenViking: Подтвердить удаление",
+  "command.showRevisionHistory": "OpenViking: Показать историю изменений",
+  "command.openLinkedCorrection": "OpenViking: Открыть связанное исправление",
+  "command.revealOvUri": "OpenViking: Показать путь OpenViking",
+  "history.title": "История изменений OpenViking",
+  "history.empty": "Для этой памяти пока нет истории изменений.",
+  "summary.base":
+    "Синхронизация OpenViking завершена: создано {created}, обновлено {updated}, удалено {deleted}, ошибок {failed}.",
+  "summary.errors": "{base} Ошибки: {details}",
+  "memory.abstract.title": "Аннотация OpenViking",
+  "memory.abstract.note":
+    "Этот раздел создаётся OpenViking, не редактируется и не синхронизируется обратно.",
+  "memory.abstract.updated": "Обновлено",
+  "memory.abstract.source": "Источник",
+  "memory.abstract.unavailable": "Аннотация недоступна.",
+};

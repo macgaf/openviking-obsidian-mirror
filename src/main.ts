@@ -6,6 +6,7 @@ import {
 import { registerCommands } from "./commands";
 import { CorrectionEngine } from "./correction-engine";
 import { RevisionHistoryModal } from "./history-view";
+import { TranslationKey, formatSyncSummaryI18n, t as translate } from "./i18n";
 import { OpenVikingClient } from "./ov-client";
 import { VaultProjector } from "./projector";
 import { DEFAULT_SETTINGS, OpenVikingSettingTab, normalizeSettings } from "./settings";
@@ -46,7 +47,7 @@ export default class OpenVikingSyncPlugin extends Plugin {
     try {
       await this.syncEngine.runFullSync(false);
     } catch (error) {
-      new Notice(`Initial OV sync failed: ${String(error)}`);
+      new Notice(this.t("notice.initialSyncFailed", { error: String(error) }));
     }
     this.syncEngine.startPolling();
   }
@@ -66,12 +67,26 @@ export default class OpenVikingSyncPlugin extends Plugin {
   }
 
   openRevisionHistory(ovUri: string): void {
-    new RevisionHistoryModal(this.app, this.store, ovUri).open();
+    new RevisionHistoryModal(this.app, this, this.store, ovUri).open();
+  }
+
+  t(key: TranslationKey, vars: Record<string, string | number> = {}): string {
+    return translate(this.settings.uiLanguage, key, vars);
+  }
+
+  formatSyncSummary(summary: import("./types").SyncSummary): string {
+    return formatSyncSummaryI18n(summary, this.settings.uiLanguage);
   }
 
   private initializeServices(): void {
     this.client = new OpenVikingClient(this.settings.baseUrl, this.settings.apiKey);
-    this.projector = new VaultProjector(this.app, this.settings.vaultFolder);
+    this.projector = new VaultProjector(this.app, this.settings.vaultFolder, () => ({
+      title: this.t("memory.abstract.title"),
+      note: this.t("memory.abstract.note"),
+      updated: this.t("memory.abstract.updated"),
+      source: this.t("memory.abstract.source"),
+      unavailable: this.t("memory.abstract.unavailable"),
+    }));
     this.syncEngine = new SyncEngine(
       () => this.settings,
       this.client,
@@ -101,11 +116,16 @@ export default class OpenVikingSyncPlugin extends Plugin {
     if (projection.entryType !== "memory_file") {
       try {
         await this.syncEngine.runFullSync(false);
-        new Notice("Directory summaries are managed by OV and were refreshed.");
+        new Notice(this.t("notice.directoryRefreshed"));
       } catch (error) {
-        new Notice(`Failed to restore OV-managed file: ${String(error)}`);
+        new Notice(this.t("notice.directoryRestoreFailed", { error: String(error) }));
       }
       return;
+    }
+
+    const restored = await this.projector.enforceGeneratedAbstract(projection);
+    if (restored) {
+      new Notice(this.t("notice.abstractRestored"));
     }
 
     await this.correctionEngine.detectDraft(file);

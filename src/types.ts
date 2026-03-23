@@ -18,6 +18,21 @@ export type ProjectionKey = string;
 export type PluginSettings = {
   baseUrl: string;
   apiKey: string;
+  uiLanguage:
+    | "auto"
+    | "en"
+    | "zh-CN"
+    | "zh-TW"
+    | "ja"
+    | "ko"
+    | "es"
+    | "fr"
+    | "de"
+    | "it"
+    | "pt-BR"
+    | "ru"
+    | "ar"
+    | "hi";
   autoDiscoverRoots: boolean;
   projectionRoots: string[];
   vaultFolder: string;
@@ -36,6 +51,22 @@ export type RemoteEntry = {
   size: number;
   modTime: string;
   isDir: boolean;
+};
+
+export type FindResultItem = {
+  context_type?: string;
+  uri: string;
+  level?: number;
+  score?: number;
+  abstract?: string | null;
+  overview?: string | null;
+};
+
+export type FindResult = {
+  memories?: FindResultItem[];
+  resources?: FindResultItem[];
+  skills?: FindResultItem[];
+  total?: number;
 };
 
 export type ProjectionFrontmatter = {
@@ -65,6 +96,8 @@ export type ProjectionFrontmatter = {
   ov_last_submit_result?: string;
   ov_last_correction_uri?: string;
   ov_correction_target_uri?: string;
+  ov_leaf_abstract_updated_at?: string;
+  ov_leaf_abstract_source?: string;
 };
 
 export type ProjectionState = {
@@ -80,6 +113,9 @@ export type ProjectionState = {
     isDir: boolean;
     modTime?: string;
     size?: number;
+    abstract?: string;
+    abstractUpdatedAt?: string;
+    abstractSource?: string;
   };
   sync: {
     status: ProjectionStatus;
@@ -136,4 +172,5 @@ export type SyncSummary = {
   updated: number;
   deleted: number;
   failed: number;
+  errors: string[];
 };

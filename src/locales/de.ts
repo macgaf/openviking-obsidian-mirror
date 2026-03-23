@@ -1,0 +1,55 @@
+import type { TranslationMessages } from "./schema";
+
+export const de: TranslationMessages = {
+  "settings.uiLanguage.name": "Sprache der Oberfläche",
+  "settings.uiLanguage.desc":
+    "Sprache für Einstellungen, Hinweise und Befehlsnamen. Nach Änderungen Obsidian neu laden.",
+  "settings.baseUrl.name": "OpenViking base URL",
+  "settings.baseUrl.desc": "Basis-URL des OpenViking-HTTP-Dienstes.",
+  "settings.apiKey.name": "API-Schlüssel",
+  "settings.apiKey.desc": "OpenViking-API-Schlüssel. Nur leer lassen, wenn der Dienst anonyme Lesezugriffe erlaubt.",
+  "settings.autoDiscover.name": "Memory-Wurzeln automatisch erkennen",
+  "settings.autoDiscover.desc":
+    "Erkennt beim Start die aktuellen Memory-Wurzeln für Benutzer und Agent in der OpenViking-Instanz.",
+  "settings.projectionRoots.name": "Projektionswurzeln",
+  "settings.projectionRoots.desc":
+    "Eine OpenViking-Memory-Wurzel pro Zeile. Wird verwendet, wenn die Auto-Erkennung deaktiviert ist.",
+  "settings.vaultFolder.name": "Vault-Ordner",
+  "settings.vaultFolder.desc": "Stammordner im Obsidian-Vault für OpenViking-Projektionen.",
+  "settings.pollInterval.name": "Abfrageintervall (Sekunden)",
+  "settings.pollInterval.desc": "Wie oft das Plugin Änderungen in OpenViking abfragt.",
+  "settings.syncNow.name": "Jetzt synchronisieren",
+  "settings.syncNow.desc":
+    "Synchronisiert die OpenViking-Wurzeln sofort und zeigt detaillierte Fehler an, falls eine Wurzel fehlschlägt.",
+  "settings.syncNow.running": "Synchronisierung mit OpenViking...",
+  "settings.reloadNotice": "Lade Obsidian neu, um Befehlsnamen und Hinweise zu aktualisieren.",
+  "notice.initialSyncFailed": "Initiale OpenViking-Synchronisierung fehlgeschlagen: {error}",
+  "notice.directoryRefreshed": "Verzeichnis-Zusammenfassungen werden von OpenViking verwaltet und wurden aktualisiert.",
+  "notice.directoryRestoreFailed": "OpenViking-verwaltete Datei konnte nicht wiederhergestellt werden: {error}",
+  "notice.abstractRestored": "Der OpenViking-Abstract-Abschnitt ist schreibgeschützt und wurde aus OpenViking wiederhergestellt.",
+  "notice.correctionSubmitted": "Korrektur an OpenViking gesendet.",
+  "notice.draftReset": "Lokaler Entwurf auf OpenViking-Inhalt zurückgesetzt.",
+  "notice.markDelete": "Speicher wurde zum Löschen markiert. Mit confirm delete wird er aus OpenViking entfernt.",
+  "notice.confirmDelete": "Speicher wurde aus OpenViking gelöscht.",
+  "notice.correctionCopied": "Correction-URI kopiert: {uri}",
+  "notice.ovUriCopied": "OpenViking-URI kopiert: {uri}",
+  "command.syncNow": "OpenViking: Jetzt synchronisieren",
+  "command.submitCorrection": "OpenViking: Korrektur senden",
+  "command.resetLocalDraft": "OpenViking: Lokalen Entwurf zurücksetzen",
+  "command.markDelete": "OpenViking: Löschen markieren",
+  "command.confirmDelete": "OpenViking: Löschen bestätigen",
+  "command.showRevisionHistory": "OpenViking: Revisionsverlauf anzeigen",
+  "command.openLinkedCorrection": "OpenViking: Verknüpfte Korrektur öffnen",
+  "command.revealOvUri": "OpenViking: OpenViking-Pfad anzeigen",
+  "history.title": "OpenViking-Revisionsverlauf",
+  "history.empty": "Für diesen Speicher gibt es noch keinen Revisionsverlauf.",
+  "summary.base":
+    "OpenViking-Synchronisierung abgeschlossen: {created} erstellt, {updated} aktualisiert, {deleted} gelöscht, {failed} fehlgeschlagen.",
+  "summary.errors": "{base} Fehler: {details}",
+  "memory.abstract.title": "OpenViking-Zusammenfassung",
+  "memory.abstract.note":
+    "Dieser Abschnitt wird von OpenViking erzeugt, ist nicht editierbar und wird nicht zurücksynchronisiert.",
+  "memory.abstract.updated": "Aktualisiert",
+  "memory.abstract.source": "Quelle",
+  "memory.abstract.unavailable": "Zusammenfassung nicht verfügbar.",
+};

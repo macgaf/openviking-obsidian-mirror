@@ -1,6 +1,13 @@
 import { App, FileSystemAdapter, Notice, TAbstractFile, TFile, normalizePath } from "obsidian";
 import { parseOvUri, getProjectionLayer, makeProjectionKey, toDeletedPath } from "./ov-uri";
-import { renderManagedMarkdown, stripManagedFrontmatter } from "./markdown";
+import {
+  extractEditableBody,
+  extractGeneratedAbstractSection,
+  renderLeafAbstractSection,
+  renderManagedMarkdown,
+  renderManagedMemoryMarkdown,
+  stripManagedFrontmatter,
+} from "./markdown";
 import {
   ManagedEntryType,
   ProjectionFrontmatter,
@@ -22,6 +29,13 @@ export class VaultProjector {
   constructor(
     private readonly app: App,
     private readonly vaultFolder: string,
+    private readonly getMemoryAbstractLabels: () => {
+      title: string;
+      note: string;
+      updated: string;
+      source: string;
+      unavailable: string;
+    },
   ) {}
 
   isSelfWrite(path: string): boolean {
@@ -73,7 +87,15 @@ export class VaultProjector {
     await this.ensureFolder(folderPath);
     const frontmatter = this.buildFrontmatter(state, stat, options.targetUri);
     const file = this.app.vault.getAbstractFileByPath(filePath);
-    const text = renderManagedMarkdown(frontmatter, body);
+    const text =
+      state.entryType === "memory_file"
+        ? renderManagedMemoryMarkdown(frontmatter, body, {
+            abstract: state.remote.abstract ?? "",
+            abstractUpdatedAt: state.remote.abstractUpdatedAt,
+            abstractSource: state.remote.abstractSource,
+            labels: this.getMemoryAbstractLabels(),
+          })
+        : renderManagedMarkdown(frontmatter, body);
 
     this.selfWritePaths.add(filePath);
     try {
@@ -97,8 +119,9 @@ export class VaultProjector {
       return;
     }
     const current = await this.app.vault.read(file);
-    const parsed = stripManagedFrontmatter(current);
-    await this.writeProjection(state, parsed.body, stat);
+    const body =
+      state.entryType === "memory_file" ? extractEditableBody(current) : stripManagedFrontmatter(current).body;
+    await this.writeProjection(state, body, stat);
   }
 
   async readBody(path: string): Promise<string> {
@@ -107,7 +130,45 @@ export class VaultProjector {
       throw new Error(`Managed file missing: ${path}`);
     }
     const current = await this.app.vault.read(file);
-    return stripManagedFrontmatter(current).body;
+    return extractEditableBody(current);
+  }
+
+  async enforceGeneratedAbstract(state: ProjectionState): Promise<boolean> {
+    if (state.entryType !== "memory_file") {
+      return false;
+    }
+
+    const file = this.app.vault.getAbstractFileByPath(state.localPath);
+    if (!(file instanceof TFile)) {
+      return false;
+    }
+
+    const current = await this.app.vault.read(file);
+    const parsed = stripManagedFrontmatter(current);
+    const currentSection = extractGeneratedAbstractSection(parsed.body);
+    const expectedSection = renderLeafAbstractSection(
+      state.remote.abstract ?? "",
+      state.remote.abstractUpdatedAt,
+      state.remote.abstractSource,
+      this.getMemoryAbstractLabels(),
+    );
+
+    if (currentSection === expectedSection) {
+      return false;
+    }
+
+    await this.writeProjection(
+      state,
+      extractEditableBody(current),
+      {
+        uri: state.ovUri,
+        name: state.ovUri.split("/").pop() ?? state.ovUri,
+        size: state.remote.size ?? 0,
+        modTime: state.remote.modTime ?? new Date().toISOString(),
+        isDir: false,
+      },
+    );
+    return true;
   }
 
   async moveToDeleted(state: ProjectionState): Promise<void> {
@@ -172,6 +233,8 @@ export class VaultProjector {
       frontmatter.ov_last_submit_result = state.draft.lastSubmitResult;
       frontmatter.ov_last_correction_uri = state.draft.lastCorrectionUri;
       frontmatter.ov_correction_target_uri = state.ovUri;
+      frontmatter.ov_leaf_abstract_updated_at = state.remote.abstractUpdatedAt;
+      frontmatter.ov_leaf_abstract_source = state.remote.abstractSource;
     } else {
       frontmatter.ov_editable = false;
       frontmatter.ov_generated_by = "ov";

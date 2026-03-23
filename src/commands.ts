@@ -2,9 +2,10 @@ import { Notice, TFile } from "obsidian";
 import type OpenVikingSyncPlugin from "./main";
 
 export function registerCommands(plugin: OpenVikingSyncPlugin): void {
+  const t = plugin.t.bind(plugin);
   plugin.addCommand({
     id: "sync-now",
-    name: "OpenViking: Sync now",
+    name: t("command.syncNow"),
     callback: async () => {
       await plugin.syncEngine.runFullSync(true);
     },
@@ -12,7 +13,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "submit-correction",
-    name: "OpenViking: Submit correction",
+    name: t("command.submitCorrection"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -22,7 +23,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
       if (!checking) {
         void plugin.correctionEngine
           .submitCorrection(projection)
-          .then(() => new Notice("Correction submitted to OpenViking."))
+          .then(() => new Notice(t("notice.correctionSubmitted")))
           .catch((error) => new Notice(String(error)));
       }
       return true;
@@ -31,7 +32,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "reset-local-draft",
-    name: "OpenViking: Reset local draft",
+    name: t("command.resetLocalDraft"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -45,7 +46,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
       if (!checking) {
         void plugin.correctionEngine
           .resetDraft(projection)
-          .then(() => new Notice("Local draft reset to OV content."))
+          .then(() => new Notice(t("notice.draftReset")))
           .catch((error) => new Notice(String(error)));
       }
       return true;
@@ -54,7 +55,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "mark-delete",
-    name: "OpenViking: Mark delete",
+    name: t("command.markDelete"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -64,7 +65,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
       if (!checking) {
         void plugin.correctionEngine
           .markDelete(projection)
-          .then(() => new Notice("Memory marked for deletion. Run confirm delete to remove it from OV."))
+          .then(() => new Notice(t("notice.markDelete")))
           .catch((error) => new Notice(String(error)));
       }
       return true;
@@ -73,7 +74,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "confirm-delete",
-    name: "OpenViking: Confirm delete",
+    name: t("command.confirmDelete"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -83,7 +84,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
       if (!checking) {
         void plugin.correctionEngine
           .confirmDelete(projection)
-          .then(() => new Notice("Memory deleted from OV."))
+          .then(() => new Notice(t("notice.confirmDelete")))
           .catch((error) => new Notice(String(error)));
       }
       return true;
@@ -92,7 +93,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "show-revision-history",
-    name: "OpenViking: Show revision history",
+    name: t("command.showRevisionHistory"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -108,7 +109,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "open-linked-correction",
-    name: "OpenViking: Open linked correction",
+    name: t("command.openLinkedCorrection"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -123,7 +124,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
         if (target) {
           void plugin.projector.openFile(target.localPath);
         } else {
-          new Notice(`Correction URI copied: ${correctionUri}`);
+          new Notice(t("notice.correctionCopied", { uri: correctionUri }));
           void navigator.clipboard.writeText(correctionUri);
         }
       }
@@ -133,7 +134,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
 
   plugin.addCommand({
     id: "reveal-ov-uri",
-    name: "OpenViking: Reveal in OpenViking path",
+    name: t("command.revealOvUri"),
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       const projection = file ? plugin.store.findProjectionByPath(file.path) : undefined;
@@ -142,7 +143,7 @@ export function registerCommands(plugin: OpenVikingSyncPlugin): void {
       }
       if (!checking) {
         void navigator.clipboard.writeText(projection.ovUri);
-        new Notice(`OV URI copied: ${projection.ovUri}`);
+        new Notice(t("notice.ovUriCopied", { uri: projection.ovUri }));
       }
       return true;
     },

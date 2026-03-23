@@ -177,7 +177,7 @@ export class CorrectionEngine {
       timestamp: nowIso(),
       type: "local_draft_reset",
       layer: "detail",
-      summary: "Local draft reset to latest OV content",
+      summary: "Local draft reset to latest OpenViking content",
     });
   }
 
@@ -215,7 +215,7 @@ export class CorrectionEngine {
       timestamp: nowIso(),
       type: "delete_confirmed",
       layer: "detail",
-      summary: "Memory deleted from OV",
+      summary: "Memory deleted from OpenViking",
     });
   }
 

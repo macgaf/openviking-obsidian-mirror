@@ -3,9 +3,11 @@ import { summarizeBody } from "./markdown";
 import { makeProjectionKey } from "./ov-uri";
 import { OpenVikingClient } from "./ov-client";
 import { VaultProjector } from "./projector";
+import { formatSyncSummary } from "./sync-summary";
 import { ProjectionStore } from "./store";
 import {
   DiscoveredRoot,
+  FindResultItem,
   PluginSettings,
   ProjectionState,
   ProjectionStatus,
@@ -77,19 +79,19 @@ export class SyncEngine {
       updated: 0,
       deleted: 0,
       failed: 0,
+      errors: [],
     };
 
     try {
       await this.syncRoots(roots, summary);
       if (showNotice) {
-        new Notice(
-          `OV sync complete: ${summary.created} created, ${summary.updated} updated, ${summary.deleted} deleted, ${summary.failed} failed.`,
-        );
+        new Notice(formatSyncSummary(summary), 8000);
       }
       return summary;
     } catch (error) {
       summary.failed += 1;
-      new Notice(`OV sync failed: ${String(error)}`);
+      summary.errors.push(String(error));
+      new Notice(`OpenViking sync failed: ${String(error)}`, 8000);
       return summary;
     }
   }
@@ -121,9 +123,10 @@ export class SyncEngine {
     for (const root of roots) {
       try {
         await this.syncRoot(root, discovered, summary);
-      } catch {
+      } catch (error) {
         if (summary) {
           summary.failed += 1;
+          summary.errors.push(`Root ${root.uri}: ${String(error)}`);
         }
       }
     }
@@ -170,8 +173,11 @@ export class SyncEngine {
 
     await this.upsertState(abstractState, stat, "synced");
     await this.upsertState(overviewState, stat, "synced");
-    await this.projector.writeProjection(abstractState, abstractText, stat, { targetUri: dirUri });
-    await this.projector.writeProjection(overviewState, overviewText, stat, { targetUri: dirUri });
+
+    if (changed) {
+      await this.projector.writeProjection(abstractState, abstractText, stat, { targetUri: dirUri });
+      await this.projector.writeProjection(overviewState, overviewText, stat, { targetUri: dirUri });
+    }
 
     if (changed) {
       if (summary) {
@@ -182,7 +188,7 @@ export class SyncEngine {
         }
       }
       await this.store.appendRevision(
-        newRevision(dirUri, wasSeen ? "remote_updated" : "remote_created", "Directory summaries refreshed from OV", {
+        newRevision(dirUri, wasSeen ? "remote_updated" : "remote_created", "Directory summaries refreshed from OpenViking", {
           layer: "l1",
           remoteModTime: stat.modTime,
           diffSummary: summarizeBody(overviewText),
@@ -202,7 +208,10 @@ export class SyncEngine {
   ): Promise<void> {
     discovered.add(fileUri);
     const state = this.getOrCreateState(fileUri, rootUri, scope, space, "memory_file");
-    const remoteChanged = state.remote.modTime !== stat.modTime || !state.localPath;
+    const remoteChanged =
+      state.remote.modTime !== stat.modTime ||
+      !state.localPath ||
+      state.remote.abstractSource === undefined;
     const currentStatus = state.sync.status;
 
     if (state.draft.hasLocalDraft) {
@@ -223,9 +232,17 @@ export class SyncEngine {
       return;
     }
 
+    if (!remoteChanged) {
+      state.sync.lastSeenAt = nowIso();
+      await this.store.upsertProjection(state);
+      return;
+    }
+
     const body = await this.client.read(fileUri);
+    const parentUri = fileUri.slice(0, fileUri.lastIndexOf("/"));
+    const abstractInfo = await this.resolveLeafAbstract(fileUri, parentUri, body);
     const eventType = state.sync.lastSyncedAt ? "remote_updated" : "remote_created";
-    await this.upsertState(state, stat, "synced", body);
+    await this.upsertState(state, stat, "synced", body, abstractInfo);
     await this.projector.writeProjection(state, body, stat);
 
     if (remoteChanged) {
@@ -237,7 +254,7 @@ export class SyncEngine {
         }
       }
       await this.store.appendRevision(
-        newRevision(fileUri, eventType, eventType === "remote_created" ? "Remote memory created" : "Remote memory updated from OV", {
+        newRevision(fileUri, eventType, eventType === "remote_created" ? "Remote memory created" : "Remote memory updated from OpenViking", {
           layer: "detail",
           remoteModTime: stat.modTime,
           diffSummary: summarizeBody(body),
@@ -261,7 +278,7 @@ export class SyncEngine {
       await this.projector.moveToDeleted(projection);
       await this.store.upsertProjection(projection);
       await this.store.appendRevision(
-        newRevision(projection.ovUri, "remote_deleted", "Remote memory deleted from OV", {
+        newRevision(projection.ovUri, "remote_deleted", "Remote memory deleted from OpenViking", {
           layer: projection.entryType === "memory_file" ? "detail" : projection.entryType === "directory_abstract" ? "l0" : "l1",
         }),
       );
@@ -310,11 +327,21 @@ export class SyncEngine {
     stat: RemoteEntry,
     status: ProjectionStatus,
     body?: string,
+    abstractInfo?: {
+      abstract: string;
+      updatedAt?: string;
+      source: string;
+    },
   ): Promise<void> {
     state.remote.exists = true;
     state.remote.isDir = stat.isDir;
     state.remote.modTime = stat.modTime;
     state.remote.size = stat.size;
+    if (abstractInfo) {
+      state.remote.abstract = abstractInfo.abstract;
+      state.remote.abstractUpdatedAt = abstractInfo.updatedAt ?? stat.modTime;
+      state.remote.abstractSource = abstractInfo.source;
+    }
     state.sync.status = status;
     state.sync.lastSeenAt = nowIso();
     state.sync.lastSyncedAt = nowIso();
@@ -327,5 +354,41 @@ export class SyncEngine {
       }
     }
     await this.store.upsertProjection(state);
+  }
+
+  private async resolveLeafAbstract(
+    fileUri: string,
+    parentUri: string,
+    body: string,
+  ): Promise<{ abstract: string; updatedAt?: string; source: string }> {
+    const query = summarizeBody(body, 120);
+    if (!query) {
+      return {
+        abstract: "",
+        updatedAt: undefined,
+        source: "unavailable",
+      };
+    }
+
+    try {
+      const result = await this.client.find(query, parentUri, 10);
+      const memories = result.memories ?? [];
+      const matched = memories.find((item) => item.uri === fileUri);
+      if (matched?.abstract?.trim()) {
+        return {
+          abstract: matched.abstract.trim(),
+          updatedAt: undefined,
+          source: "search.find",
+        };
+      }
+    } catch {
+      // Ignore and fall through.
+    }
+
+    return {
+      abstract: "",
+      updatedAt: undefined,
+      source: "unavailable",
+    };
   }
 }

@@ -1,0 +1,55 @@
+import type { TranslationMessages } from "./schema";
+
+export const es: TranslationMessages = {
+  "settings.uiLanguage.name": "Idioma de la interfaz",
+  "settings.uiLanguage.desc":
+    "Idioma usado por la configuración, las notificaciones y los nombres de comandos. Recarga Obsidian después de cambiarlo.",
+  "settings.baseUrl.name": "OpenViking base URL",
+  "settings.baseUrl.desc": "URL base del servicio HTTP de OpenViking.",
+  "settings.apiKey.name": "Clave API",
+  "settings.apiKey.desc": "Clave API de OpenViking. Déjala vacía solo si el servicio permite lecturas anónimas.",
+  "settings.autoDiscover.name": "Detectar raíces de memoria automáticamente",
+  "settings.autoDiscover.desc":
+    "Detecta al iniciar las raíces de memoria del usuario y del agente en la instancia de OpenViking.",
+  "settings.projectionRoots.name": "Raíces de proyección",
+  "settings.projectionRoots.desc":
+    "Una raíz de memoria de OpenViking por línea. Se usa cuando la detección automática está deshabilitada.",
+  "settings.vaultFolder.name": "Carpeta del vault",
+  "settings.vaultFolder.desc": "Carpeta raíz dentro del vault de Obsidian que almacena las proyecciones de OpenViking.",
+  "settings.pollInterval.name": "Intervalo de sondeo (segundos)",
+  "settings.pollInterval.desc": "Frecuencia con la que el plugin consulta cambios en OpenViking.",
+  "settings.syncNow.name": "Sincronizar ahora",
+  "settings.syncNow.desc":
+    "Sincroniza ahora las raíces de OpenViking y muestra errores detallados si alguna raíz falla.",
+  "settings.syncNow.running": "Sincronizando con OpenViking...",
+  "settings.reloadNotice": "Recarga Obsidian para actualizar los nombres de comandos y las notificaciones.",
+  "notice.initialSyncFailed": "La sincronización inicial con OpenViking falló: {error}",
+  "notice.directoryRefreshed": "Los resúmenes de directorio están gestionados por OpenViking y se actualizaron.",
+  "notice.directoryRestoreFailed": "No se pudo restaurar el archivo gestionado por OpenViking: {error}",
+  "notice.abstractRestored": "La sección OpenViking abstract es de solo lectura y fue restaurada desde OpenViking.",
+  "notice.correctionSubmitted": "La corrección se envió a OpenViking.",
+  "notice.draftReset": "El borrador local se restauró al contenido de OpenViking.",
+  "notice.markDelete": "La memoria se marcó para eliminación. Ejecuta confirm delete para borrarla de OpenViking.",
+  "notice.confirmDelete": "La memoria se eliminó de OpenViking.",
+  "notice.correctionCopied": "URI de corrección copiada: {uri}",
+  "notice.ovUriCopied": "URI de OpenViking copiada: {uri}",
+  "command.syncNow": "OpenViking: Sincronizar ahora",
+  "command.submitCorrection": "OpenViking: Enviar corrección",
+  "command.resetLocalDraft": "OpenViking: Restablecer borrador local",
+  "command.markDelete": "OpenViking: Marcar eliminación",
+  "command.confirmDelete": "OpenViking: Confirmar eliminación",
+  "command.showRevisionHistory": "OpenViking: Mostrar historial de revisiones",
+  "command.openLinkedCorrection": "OpenViking: Abrir corrección vinculada",
+  "command.revealOvUri": "OpenViking: Mostrar ruta OpenViking",
+  "history.title": "Historial de revisiones de OpenViking",
+  "history.empty": "Todavía no hay historial de revisiones para esta memoria.",
+  "summary.base":
+    "Sincronización de OpenViking completada: {created} creados, {updated} actualizados, {deleted} eliminados, {failed} fallidos.",
+  "summary.errors": "{base} Errores: {details}",
+  "memory.abstract.title": "Resumen de OpenViking",
+  "memory.abstract.note":
+    "Esta sección es generada por OpenViking, no se puede editar y no se sincroniza de vuelta.",
+  "memory.abstract.updated": "Actualizado",
+  "memory.abstract.source": "Origen",
+  "memory.abstract.unavailable": "Resumen no disponible.",
+};

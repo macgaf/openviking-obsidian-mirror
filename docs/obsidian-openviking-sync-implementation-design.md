@@ -1,4 +1,4 @@
-# Obsidian 与 OV 记忆观察窗插件实现设计草案
+# Obsidian 与 OpenViking 记忆观察窗插件实现设计草案
 
 ## 1. 文档目的
 
@@ -9,7 +9,7 @@
 本阶段实现目标不是一次性做完整插件，而是优先搭出稳定的基础骨架，使功能按以下顺序逐步落地：
 
 1. 配置与状态持久化
-2. OV HTTP API 访问
+2. OpenViking HTTP API 访问
 3. Vault 投影生成
 4. 拉取同步
 5. 文件级正文草稿检测
@@ -52,6 +52,7 @@ src/
 - 定义默认配置
 - 读取和保存配置
 - 提供设置界面
+- 提供 `立即同步` 按钮和错误显示
 - 校验 `baseUrl`、`autoDiscoverRoots`、`projectionRoots`、`pollIntervalSec`
 
 ### 4.3 `src/types.ts`
@@ -68,7 +69,7 @@ src/
 
 ### 4.4 `src/ov-client.ts`
 
-封装 OV 官方 HTTP API，职责仅限远端通信：
+封装 OpenViking 官方 HTTP API，职责仅限远端通信：
 
 - `discoverMemoryRoots`
 - `ls`
@@ -101,9 +102,10 @@ src/
 
 ### 4.6 `src/projector.ts`
 
-负责将 OV 数据投影为 Vault 文件：
+负责将 OpenViking 数据投影为 Vault 文件：
 
 - 创建目录级摘要投影文件和叶子 memory 文件投影
+- 在 leaf memory 文件顶部渲染只读 `abstract` 节和更新时间
 - 写 frontmatter
 - 处理 `_deleted` 目录迁移
 - 自写 token 防循环
@@ -118,6 +120,8 @@ src/
 - 先发现真实 memory roots
 - 使用 `fs/ls` 发现目录和文件
 - 使用 `fs/stat` 作为版本判断依据
+- 对 leaf memory 文件补做一次 abstract 解析
+- 汇总 root 级错误，供命令面板和设置页展示
 - 决定新建、更新、跳过、标记 stale、移入 deleted
 
 ### 4.8 `src/correction-engine.ts`
@@ -125,6 +129,7 @@ src/
 负责本地草稿和 correction 提交：
 
 - 检测可编辑 memory 文件是否产生草稿
+- 对比时忽略顶部 generated abstract 节
 - 提交 correction message
 - 重置草稿
 - 删除标记和确认删除
@@ -194,6 +199,7 @@ main
 - 可调用 OV API
 - 可自动发现 memory roots
 - 可创建目录摘要投影和 memory 文件投影
+- 可在每个 leaf memory 文件顶部显示只读 abstract 节
 
 ### 第二阶段
 
@@ -211,4 +217,4 @@ main
 - 先做只读观察，再做回写
 - 先稳定状态存储，再扩展 UI
 - 保持模块边界清晰，避免一个文件同时做 HTTP、状态更新和 Vault 写入
-- 所有对 OV 规则有影响的行为，优先遵从 OV 现有分层与语义
+- 所有对 OpenViking 规则有影响的行为，优先遵从 OpenViking 现有分层与语义
