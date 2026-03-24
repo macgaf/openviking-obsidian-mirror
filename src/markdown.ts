@@ -1,18 +1,11 @@
-import YAML from "yaml";
-import { ProjectionFrontmatter } from "./types";
-
-const FRONTMATTER_BOUNDARY = "---";
 const GENERATED_ABSTRACT_START = "<!-- ov-generated-abstract:start -->";
 const GENERATED_ABSTRACT_END = "<!-- ov-generated-abstract:end -->";
 
-export function renderManagedMarkdown(frontmatter: ProjectionFrontmatter, body: string): string {
-  const yaml = YAML.stringify(frontmatter).trimEnd();
-  const normalizedBody = body.replace(/^\n+/, "");
-  return `${FRONTMATTER_BOUNDARY}\n${yaml}\n${FRONTMATTER_BOUNDARY}\n\n${normalizedBody}`;
+export function renderManagedBody(body: string): string {
+  return body.replace(/^\n+/, "");
 }
 
-export function renderManagedMemoryMarkdown(
-  frontmatter: ProjectionFrontmatter,
+export function renderManagedMemoryBody(
   body: string,
   options: {
     abstract: string;
@@ -33,37 +26,12 @@ export function renderManagedMemoryMarkdown(
     options.abstractSource,
     options.labels,
   );
-  const normalizedBody = body.replace(/^\n+/, "");
-  return renderManagedMarkdown(frontmatter, `${abstractBlock}\n\n${normalizedBody}`);
-}
-
-export function stripManagedFrontmatter(text: string): {
-  frontmatter: Record<string, unknown>;
-  body: string;
-} {
-  if (!text.startsWith(`${FRONTMATTER_BOUNDARY}\n`)) {
-    return { frontmatter: {}, body: text };
-  }
-
-  const marker = `\n${FRONTMATTER_BOUNDARY}\n`;
-  const end = text.indexOf(marker, FRONTMATTER_BOUNDARY.length + 1);
-  if (end === -1) {
-    return { frontmatter: {}, body: text };
-  }
-
-  const rawYaml = text.slice(FRONTMATTER_BOUNDARY.length + 1, end);
-  const body = text.slice(end + marker.length).replace(/^\n/, "");
-  const frontmatter = (YAML.parse(rawYaml) ?? {}) as Record<string, unknown>;
-
-  return {
-    frontmatter,
-    body,
-  };
+  const normalizedBody = renderManagedBody(body);
+  return normalizedBody ? `${abstractBlock}\n\n${normalizedBody}` : abstractBlock;
 }
 
 export function extractEditableBody(text: string): string {
-  const { body } = stripManagedFrontmatter(text);
-  return stripGeneratedAbstractSection(body);
+  return stripGeneratedAbstractSection(text.replace(/^\n+/, ""));
 }
 
 export function stripGeneratedAbstractSection(body: string): string {

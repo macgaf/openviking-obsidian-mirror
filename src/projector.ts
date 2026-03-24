@@ -1,12 +1,11 @@
-import { App, FileSystemAdapter, Notice, TAbstractFile, TFile, normalizePath } from "obsidian";
+import { App, FileSystemAdapter, Notice, TAbstractFile, TFile, getFrontMatterInfo, normalizePath } from "obsidian";
 import { parseOvUri, getProjectionLayer, makeProjectionKey, toDeletedPath } from "./ov-uri";
 import {
   extractEditableBody,
   extractGeneratedAbstractSection,
   renderLeafAbstractSection,
-  renderManagedMarkdown,
-  renderManagedMemoryMarkdown,
-  stripManagedFrontmatter,
+  renderManagedBody,
+  renderManagedMemoryBody,
 } from "./markdown";
 import {
   ManagedEntryType,
@@ -89,23 +88,25 @@ export class VaultProjector {
     const file = this.app.vault.getAbstractFileByPath(filePath);
     const text =
       state.entryType === "memory_file"
-        ? renderManagedMemoryMarkdown(frontmatter, body, {
+        ? renderManagedMemoryBody(body, {
             abstract: state.remote.abstract ?? "",
             abstractUpdatedAt: state.remote.abstractUpdatedAt,
             abstractSource: state.remote.abstractSource,
             labels: this.getMemoryAbstractLabels(),
           })
-        : renderManagedMarkdown(frontmatter, body);
+        : renderManagedBody(body);
 
     this.selfWritePaths.add(filePath);
     try {
       if (file instanceof TFile) {
-        await this.app.vault.modify(file, text);
+        await this.app.vault.process(file, (current) => this.replaceDocumentBody(current, text));
+        await this.syncFrontmatter(file, frontmatter);
         state.localPath = file.path;
         return file;
       }
 
       const created = await this.app.vault.create(filePath, text);
+      await this.syncFrontmatter(created, frontmatter);
       state.localPath = created.path;
       return created;
     } finally {
@@ -120,7 +121,9 @@ export class VaultProjector {
     }
     const current = await this.app.vault.read(file);
     const body =
-      state.entryType === "memory_file" ? extractEditableBody(current) : stripManagedFrontmatter(current).body;
+      state.entryType === "memory_file"
+        ? extractEditableBody(this.extractDocumentBody(current))
+        : this.extractDocumentBody(current);
     await this.writeProjection(state, body, stat);
   }
 
@@ -130,7 +133,7 @@ export class VaultProjector {
       throw new Error(`Managed file missing: ${path}`);
     }
     const current = await this.app.vault.read(file);
-    return extractEditableBody(current);
+    return extractEditableBody(this.extractDocumentBody(current));
   }
 
   async enforceGeneratedAbstract(state: ProjectionState): Promise<boolean> {
@@ -144,8 +147,7 @@ export class VaultProjector {
     }
 
     const current = await this.app.vault.read(file);
-    const parsed = stripManagedFrontmatter(current);
-    const currentSection = extractGeneratedAbstractSection(parsed.body);
+    const currentSection = extractGeneratedAbstractSection(this.extractDocumentBody(current));
     const expectedSection = renderLeafAbstractSection(
       state.remote.abstract ?? "",
       state.remote.abstractUpdatedAt,
@@ -242,5 +244,30 @@ export class VaultProjector {
     }
 
     return frontmatter;
+  }
+
+  private async syncFrontmatter(file: TFile, frontmatter: ProjectionFrontmatter): Promise<void> {
+    const entries = Object.entries(frontmatter).filter(([, value]) => value !== undefined);
+    const nextKeys = new Set(entries.map(([key]) => key));
+    await this.app.fileManager.processFrontMatter(file, (current) => {
+      for (const key of Object.keys(current)) {
+        if (key.startsWith("ov_") && !nextKeys.has(key)) {
+          delete current[key];
+        }
+      }
+      for (const [key, value] of entries) {
+        current[key] = value;
+      }
+    });
+  }
+
+  private extractDocumentBody(text: string): string {
+    const info = getFrontMatterInfo(text);
+    return (info.exists ? text.slice(info.contentStart) : text).replace(/^\n+/, "");
+  }
+
+  private replaceDocumentBody(text: string, body: string): string {
+    const info = getFrontMatterInfo(text);
+    return info.exists ? `${text.slice(0, info.contentStart)}${renderManagedBody(body)}` : renderManagedBody(body);
   }
 }
