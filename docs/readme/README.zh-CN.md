@@ -1,4 +1,4 @@
-# Obsidian OpenViking Sync
+# OpenViking Sync
 
 🌐 README:
 🇺🇸 [English](../../README.md) |
@@ -55,7 +55,7 @@ npm run build
 将 `main.js` 和 `manifest.json` 复制到：
 
 ```text
-<Vault>/.obsidian/plugins/obsidian-openviking-sync/
+<Vault>/.obsidian/plugins/openviking-sync/
 ```
 
 然后重载 Obsidian 并启用插件。

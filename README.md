@@ -1,4 +1,4 @@
-# Obsidian OpenViking Sync
+# OpenViking Sync
 
 🌐 README:
 🇺🇸 [English](README.md) |
@@ -55,7 +55,7 @@ npm run build
 Copy `main.js` and `manifest.json` into:
 
 ```text
-<Vault>/.obsidian/plugins/obsidian-openviking-sync/
+<Vault>/.obsidian/plugins/openviking-sync/
 ```
 
 Then reload Obsidian and enable the plugin.
@@ -74,6 +74,15 @@ Recommended local defaults:
 - `Polling interval`: `60`
 
 ![Plugin settings page](docs/readme/assets/plugin-settings.png)
+
+## Disclosures
+
+- This plugin sends network requests only to the OpenViking base URL you configure.
+- If you configure an API key, the plugin sends it to OpenViking in the `X-API-Key` request header and stores it locally in Obsidian plugin data.
+- The plugin stores settings, sync state, projection metadata, and revision history in local plugin data on your device.
+- The plugin writes managed projection files only inside the vault folder you configure.
+- Submitting corrections or confirming deletions requires explicit user commands. Correction submission sends the original and edited memory content to OpenViking and creates a temporary OpenViking session during extraction.
+- This plugin does not include telemetry, analytics, advertising, or calls to third-party services beyond the OpenViking endpoint you configure.
 
 ## Development
 

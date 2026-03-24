@@ -1,4 +1,4 @@
-# Obsidian OpenViking Sync
+# OpenViking Sync
 
 🌐 README:
 🇺🇸 [English](../../README.md) |
@@ -55,7 +55,7 @@ npm run build
 Copia `main.js` e `manifest.json` in:
 
 ```text
-<Vault>/.obsidian/plugins/obsidian-openviking-sync/
+<Vault>/.obsidian/plugins/openviking-sync/
 ```
 
 ![Installed plugin in Obsidian third-party plugins list](assets/plugin-list.png)
