@@ -3,7 +3,7 @@
   "name": "OpenViking Sync",
   "version": "0.1.0",
   "minAppVersion": "1.6.0",
-  "description": "Observe OpenViking memories in Obsidian and submit controlled corrections.",
+  "description": "Mirror OpenViking memories into your vault and submit controlled corrections.",
   "author": "macgaf",
   "isDesktopOnly": true
 }

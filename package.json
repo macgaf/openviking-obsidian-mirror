@@ -4,7 +4,7 @@
   "private": true,
   "author": "macgaf",
   "license": "MIT",
-  "description": "Obsidian plugin for observing and correcting OpenViking memories",
+  "description": "Mirror OpenViking memories into your vault and submit controlled corrections.",
   "scripts": {
     "build": "node esbuild.config.mjs production",
     "dev": "node esbuild.config.mjs development",
