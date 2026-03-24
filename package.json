@@ -2,6 +2,8 @@
   "name": "obsidian-openviking-sync",
   "version": "0.1.0",
   "private": true,
+  "author": "macgaf",
+  "license": "MIT",
   "description": "Obsidian plugin for observing and correcting OpenViking memories",
   "scripts": {
     "build": "node esbuild.config.mjs production",
