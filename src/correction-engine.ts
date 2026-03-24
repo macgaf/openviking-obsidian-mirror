@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { summarizeBody } from "./markdown";
 import { getParentDirectoryUri } from "./ov-uri";
 import { OpenVikingClient } from "./ov-client";
@@ -112,7 +112,7 @@ export class CorrectionEngine {
         );
       }
 
-      const correctionUri = candidateUris[0]!;
+      const correctionUri = candidateUris[0];
       await this.client.link(projection.ovUri, correctionUri, "Human correction from Obsidian");
       projection.sync.status = "synced";
       projection.draft.hasLocalDraft = false;

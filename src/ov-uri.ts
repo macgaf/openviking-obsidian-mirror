@@ -21,7 +21,7 @@ export function parseOvUri(uri: string): ParsedOvUri {
   if (parts.length === 0) {
     throw new Error(`Invalid OV URI without path: ${uri}`);
   }
-  const basename = parts[parts.length - 1]!;
+  const basename = parts[parts.length - 1];
   const parentUri =
     parts.length > 1 ? `viking://${rawScope}/${space}/${parts.slice(0, -1).join("/")}` : undefined;
 

@@ -38,12 +38,12 @@ export const en: TranslationMessages = {
   "command.showRevisionHistory": "Show revision history",
   "command.openLinkedCorrection": "Open linked correction",
   "command.revealOvUri": "Reveal in OpenViking path",
-  "history.title": "OpenViking Revision History",
+  "history.title": "OpenViking revision history",
   "history.empty": "No revision history for this memory yet.",
   "summary.base":
     "OpenViking sync complete: {created} created, {updated} updated, {deleted} deleted, {failed} failed.",
   "summary.errors": "{base} Errors: {details}",
-  "memory.abstract.title": "OpenViking Abstract",
+  "memory.abstract.title": "OpenViking abstract",
   "memory.abstract.note":
     "This section is generated from OpenViking, is not editable, and will not be synced back.",
   "memory.abstract.updated": "Updated",

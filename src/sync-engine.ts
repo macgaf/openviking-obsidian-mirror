@@ -7,7 +7,6 @@ import { formatSyncSummary } from "./sync-summary";
 import { ProjectionStore } from "./store";
 import {
   DiscoveredRoot,
-  FindResultItem,
   PluginSettings,
   ProjectionState,
   ProjectionStatus,
@@ -349,9 +348,6 @@ export class SyncEngine {
       state.draft.lastSyncedContent = body;
       state.draft.hasLocalDraft = false;
       state.draft.localDraftUpdatedAt = undefined;
-      if (status === "synced") {
-        state.draft.lastSubmitResult = state.draft.lastSubmitResult;
-      }
     }
     await this.store.upsertProjection(state);
   }

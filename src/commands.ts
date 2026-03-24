@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { Notice } from "obsidian";
 import type OpenVikingSyncPlugin from "./main";
 
 export function registerCommands(plugin: OpenVikingSyncPlugin): void {

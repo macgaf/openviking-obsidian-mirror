@@ -1,5 +1,5 @@
-import { App, FileSystemAdapter, Notice, TAbstractFile, TFile, getFrontMatterInfo, normalizePath } from "obsidian";
-import { parseOvUri, getProjectionLayer, makeProjectionKey, toDeletedPath } from "./ov-uri";
+import { App, Notice, TFile, getFrontMatterInfo, normalizePath } from "obsidian";
+import { parseOvUri, getProjectionLayer, toDeletedPath } from "./ov-uri";
 import {
   extractEditableBody,
   extractGeneratedAbstractSection,
@@ -11,7 +11,6 @@ import {
   ManagedEntryType,
   ProjectionFrontmatter,
   ProjectionState,
-  ProjectionStatus,
   RemoteEntry,
 } from "./types";
 

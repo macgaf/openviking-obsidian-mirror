@@ -92,7 +92,7 @@ export class OpenVikingSettingTab extends PluginSettingTab {
       .setDesc(t("settings.projectionRoots.desc"))
       .addTextArea((text) =>
         text
-          .setPlaceholder("viking://user/default/memories")
+          .setPlaceholder("Example: viking://user/default/memories")
           .setValue(this.plugin.settings.projectionRoots.join("\n"))
           .onChange(async (value) => {
             await this.plugin.updateSettings({
